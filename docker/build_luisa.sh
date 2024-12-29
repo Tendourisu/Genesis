@@ -19,4 +19,4 @@ cmake -S . -B build \
     -D LUISA_COMPUTE_ENABLE_GUI=OFF \
     -D LUISA_COMPUTE_ENABLE_CUDA=ON \
     -Dpybind11_DIR=$(python3 -c "import pybind11; print(pybind11.get_cmake_dir())") && \
-cmake --build build -j $(nproc)
+cmake --build build -j 1

@@ -9,7 +9,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.11
 
 # Install necessary packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     manpages-dev \
     libvulkan-dev \
@@ -45,9 +47,14 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.31.0-rc2/cmake-3.
 
 # Build LuisaRender
 WORKDIR /workspace
-RUN git clone https://github.com/Genesis-Embodied-AI/Genesis.git && \
+RUN git config --global http.postBuffer 1048576000 && \
+    git config --global http.lowSpeedLimit 0 && \
+    git config --global http.lowSpeedTime 999999 && \
+    git clone https://github.com/Genesis-Embodied-AI/Genesis.git && \
     cd Genesis && \
-    git submodule update --init --recursive
+    git submodule update --init --recursive --jobs 8 || \
+    (sleep 5 && git submodule update --init --recursive --jobs 8) || \
+    (sleep 5 && git submodule update --init --recursive --jobs 8)
 COPY build_luisa.sh /workspace/build_luisa.sh
 RUN chmod +x ./build_luisa.sh && ./build_luisa.sh ${PYTHON_VERSION}
 
@@ -61,7 +68,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    apt-get update && apt-get install -y --no-install-recommends \
     tmux \
     git \
     curl \
